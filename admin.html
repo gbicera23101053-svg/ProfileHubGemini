@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* CSS PARA SA INSPETION MODAL POP-UP */
+        .preview-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: rgba(30, 30, 45, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 2.5rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            color: #fff;
+            position: relative;
+        }
+        .close-modal-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #aaa;
+            transition: color 0.2s;
+        }
+        .close-modal-btn:hover { color: #fff; }
+        .modal-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem;
+            background-color: #5758bb;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid var(--accent-color, #786fa6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+        .modal-bio-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            text-align: left;
+            min-height: 60px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            word-wrap: break-word;
+        }
+        .btn-danger {
+            background: #ff7675;
+            color: #white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn-danger:hover { background: #d63031; }
+        .clickable-email {
+            color: #74b9ff;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .clickable-email:hover { color: #0984e3; }
+    </style>
+</head>
+<body class="dark-mode">
+
+    <a href="index.html" class="back-hub-btn">← Logout Hub</a>
+
+    <div class="admin-workspace-card">
+        <div class="admin-header-main">
+            <h2>System Control Panel</h2>
+            <p>Logged in as: gerraldbicerabicera@gmail.com (Root)</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="admin-tabs-nav">
+            <button class="tab-nav-btn active" onclick="switchAdminTab('monitoring-tab')">System Monitoring</button>
+            <button class="tab-nav-btn" onclick="switchAdminTab('profile-tab')">Customize Profile</button>
+        </div>
+
+        <!-- TAB 1: Live Monitoring Panel -->
+        <div id="monitoring-tab" class="admin-tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <p>Total Registered</p>
+                    <h3>0</h3>
+                </div>
+                <div class="stat-card">
+                    <p>Live Active Now</p>
+                    <h3>0</h3>
+                </div>
+                <div class="stat-card">
+                    <p>Firewall Status</p>
+                    <h3 style="color: #4cd137;">99.9%</h3>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 2rem; color: #74b9ff;">Live Member Directory & Account Recovery</h3>
+            <p style="font-size: 0.85rem; color: #ff7675; margin-bottom: 1rem;">*Click a member's email address to inspect their full profile workspace and manage credentials.</p>
+
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>MEMBER IDENTITY (CLICK TO EDIT)</th>
+                            <th>ACCOUNT EMAIL</th>
+                            <th>SYSTEM PASSWORD</th>
+                            <th>LIVE SYSTEM STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                        <!-- Dynamic lines handled via javascript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 2: Admin Profile View Configuration -->
+        <div id="profile-tab" class="admin-tab-content">
+            <div class="profile-custom-wrapper">
+                <div class="profile-custom-layout">
+                    <div class="avatar-upload-block">
+                        <div class="admin-avatar-bubble" id="avatarPreview" onclick="triggerAvatarUpload()">
+                            <span id="avatarInitial">A</span>
+                        </div>
+                        <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" onchange="handleAvatarChange(this)">
+                        <p class="avatar-label">Click bubble to change Admin DP</p>
+                    </div>
+
+                    <div class="profile-form-grid">
+                        <div class="input-group">
+                            <label>Display Name</label>
+                            <input type="text" id="sysNameInput">
+                        </div>
+                        <div class="input-group">
+                            <label>Admin Bio / About Me</label>
+                            <textarea id="sysBioInput"></textarea>
+                        </div>
+                        <button type="button" class="btn" id="saveProfileBtn">Save Admin Profile</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODERN MODAL FOR USER INSPECTION & DATA TERMINATION -->
+    <div id="userPreviewModal" class="preview-modal">
+        <div class="modal-content">
+            <span class="close-modal-btn" onclick="closeInspectorModal()">&times;</span>
+            <h3 style="margin-bottom: 1.5rem; color: #74b9ff;">Member Profiling Inspector</h3>
+            
+            <div class="modal-avatar" id="modalUserAvatar">
+                <span id="modalUserInitial">M</span>
+            </div>
+            
+            <h2 id="modalUserName" style="margin-bottom: 0.2rem;">User Name</h2>
+            <p id="modalUserEmail" style="font-size: 0.85rem; color: #aaa; margin-bottom: 1rem;">user@domain.com</p>
+            
+            <div style="text-align: left; font-size: 0.8rem; color: #74b9ff; font-weight: bold;">Member Bio Configuration:</div>
+            <div class="modal-bio-box" id="modalUserBio">
+                No bio information available.
+            </div>
+            
+            <button type="button" class="btn-danger" id="deleteUserBtn">Terminate & Delete Account</button>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

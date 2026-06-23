@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+
+    <a href="index.html" class="back-hub-btn">← Back to Hub</a>
+
+    <div class="form-container">
+        <form id="login-form" class="auth-form-static">
+            <h2>Welcome Back</h2>
+            <p>Login to access your account</p>
+            
+            <div class="input-group">
+                <input type="email" id="login-email" placeholder="Email Address" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="login-password" placeholder="Password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-block">Sign In</button>
+            
+            <p class="form-footer">
+                Don't have an account? <a href="register.html">Register here</a>
+            </p>
+        </form>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>

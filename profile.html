@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Profile Panel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+
+    <a href="index.html" class="back-hub-btn">← Logout Hub</a>
+
+    <div class="admin-workspace-card">
+        <div class="admin-header-main">
+            <h2>Member Configuration Space</h2>
+            <p>Welcome to your interface customization hub.</p>
+        </div>
+
+        <div class="profile-custom-wrapper">
+            <h3>Customize Profile</h3>
+            <p>Modify your display status credentials, system metadata variables, and custom avatar view.</p>
+            
+            <div class="profile-custom-layout">
+                <div class="avatar-upload-block">
+                    <div class="admin-avatar-bubble" id="avatarPreview" onclick="triggerAvatarUpload()">
+                        <span id="avatarInitial">M</span>
+                    </div>
+                    <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" onchange="handleAvatarChange(this)">
+                    <p class="avatar-label">Click bubble to change Avatar DP</p>
+                </div>
+
+                <div class="profile-form-grid">
+                    <div class="input-group">
+                        <label>Display Name</label>
+                        <input type="text" id="sysNameInput">
+                    </div>
+                    <div class="input-group">
+                        <label>Member Bio / About Me</label>
+                        <textarea id="sysBioInput" placeholder="Write something about yourself..."></textarea>
+                    </div>
+                    <button type="button" class="btn" id="saveProfileBtn">Save Profile Configuration</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="member.js"></script>
+</body>
+</html>

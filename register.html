@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+
+    <a href="index.html" class="back-hub-btn">← Back to Hub</a>
+
+    <div class="form-container">
+        <form id="register-form" class="auth-form-static">
+            <h2>Create Account</h2>
+            <p>Get started with your free account</p>
+            
+            <div class="input-group">
+                <input type="text" id="reg-name" placeholder="Full Name" required>
+            </div>
+            <div class="input-group">
+                <input type="email" id="reg-email" placeholder="Email Address" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="reg-password" placeholder="Create Password" required>
+            </div>
+            
+            <button type="submit" class="btn btn-block">Register Now</button>
+            
+            <p class="form-footer">
+                Already have an account? <a href="login.html">Login here</a>
+            </p>
+        </form>
+    </div>
+
+    <script src="auth.js"></script>
+</body>
+</html>
