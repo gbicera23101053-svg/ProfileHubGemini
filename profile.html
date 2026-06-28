@@ -6,38 +6,45 @@
     <title>Member Profile Panel</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* 🎛️ TAB SWITCHING ARCHITECTURE STYLES */
+        /* 📜 FIX: Siguraduhing may global scrollbar ang body para sa mobile view */
+        html, body {
+            overflow-y: auto !important;
+            min-height: 100vh;
+        }
+
+        /* 🎛️ TAB SWITCHING ARCHITECTURE STYLES (Inline Wide Layout) */
         .dashboard-navigation-tabs {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 25px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding-bottom: 12px;
-            flex-wrap: wrap; /* Para hindi mag-overflow kung maliit ang screen */
         }
+        
         .nav-tab-btn {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #b2b2c5;
-            padding: 12px 22px;
+            padding: 10px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 600;
             transition: all 0.2s ease;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 5px;
-            flex: 1; /* Pantay-pantay na hatian sa desktop */
-            min-width: 100px;
+            gap: 6px;
+            flex: 1; /* Wide distribution strategy */
             text-align: center;
+            white-space: nowrap;
         }
+        
         .nav-tab-btn:hover {
             background: rgba(255, 255, 255, 0.1);
             color: #fff;
         }
+        
         .nav-tab-btn.active {
             background: #ff007f;
             color: #fff;
@@ -45,15 +52,19 @@
             box-shadow: 0 0 10px rgba(255, 0, 127, 0.3);
         }
         
+        /* Glass Box Card Container Optimization */
+        .admin-workspace-card {
+            max-height: 85vh; /* Limitahan ang taas para magkasya sa screen */
+            overflow-y: auto !important; /* 🔥 DITO LALABAS ANG SCROLLBAR KAPAG PUNO NA NG DATA */
+            padding: 25px;
+            box-sizing: border-box;
+        }
+
         /* Light Mode Styles Adaptation */
         body.light-mode .nav-tab-btn {
             background: #e2e4e9;
             border: 1px solid #cbd2d9;
             color: #616e7c;
-        }
-        body.light-mode .nav-tab-btn:hover {
-            background: #cbd2d9;
-            color: #1c1c24;
         }
         body.light-mode .nav-tab-btn.active {
             background: #ff007f;
@@ -62,67 +73,72 @@
         }
         
         .tab-content-panel {
-            animation: fadeInState 0.3s ease-in-out;
+            animation: fadeInState 0.25s ease-in-out;
         }
+        
         @keyframes fadeInState {
-            from { opacity: 0; transform: translateY(5px); }
+            from { opacity: 0; transform: translateY(3px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         /* ================================================================= */
-        /* 📱 MOBILE RESPONSIVE MEDIA QUERIES (THE FIX!)                     */
-        /* ================================================================= --> */
+        /* 📱 CLEAN & BULLETPROOF MOBILE QUERIES (WIDE BUT RESPONSIVE)       */
+        /* ================================================================= */
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
+            .admin-workspace-card {
+                max-height: 75vh; /* Mas maliit sa mobile para hindi kainin ang buong viewport */
+                padding: 15px;
+                margin-top: 70px; /* Bigyan ng clearance ang logout bar */
             }
-            /* Ayusin ang patong-patong na logout trigger */
+
+            /* Ayusin ang patong-patong na logout/theme layout buttons */
             .back-hub-btn {
-                position: static !important;
-                display: block;
-                width: 100%;
-                text-align: center;
-                margin-bottom: 15px;
-                box-sizing: border-box;
+                position: absolute !important;
+                top: 15px !important;
+                left: 15px !important;
+                width: auto !important;
+                display: inline-block !important;
+                margin-bottom: 0px !important;
+                font-size: 0.8rem !important;
+                padding: 8px 15px !important;
+                z-index: 999;
             }
-            /* Gawing flexible vertically stacked grid ang header panel niyo */
+
             .admin-header-layout-container {
-                flex-direction: column !important;
-                align-items: stretch !important;
-                text-align: center;
-            }
-            #themeToggleBtn {
-                width: 100% !important;
+                flex-direction: row !important;
+                flex-wrap: wrap;
+                align-items: center !important;
+                justify-content: space-between !important;
+                text-align: left !important;
                 margin-top: 10px;
             }
-            /* Patayuin ang tabs para kasya kahit sa maliit na screen ng Messenger */
+
+            #themeToggleBtn {
+                width: auto !important;
+                font-size: 0.75rem !important;
+                padding: 6px 12px !important;
+            }
+
+            /* Panatilihing Wide/Horizontal ang Tabs pero Compact */
             .dashboard-navigation-tabs {
-                flex-direction: row; /* Hatiin pa rin pero bigyan ng sapat na width layout */
-                gap: 8px;
+                gap: 4px;
             }
+
             .nav-tab-btn {
-                padding: 10px 8px;
-                font-size: 0.8rem;
-                flex: 1 1 calc(33.333% - 8px); /* Pantay na tatlong column sa phone */
-                min-width: 80px;
+                padding: 8px 4px;
+                font-size: 0.72rem;
+                gap: 3px;
             }
-            /* Layout adjustments sa form block */
-            .profile-custom-layout {
-                flex-direction: column !important;
-                align-items: center;
+            
+            .nav-tab-btn span:first-child {
+                font-size: 0.85rem; /* Paliitin ang emoji icon badge */
             }
-            .admin-card-display {
-                flex-direction: column !important;
-                text-align: center;
-            }
-            /* Matrix Game board layout fix para di kumalat ang grid layout dimensions */
+
+            /* Responsive Matrix board grid metrics update */
             #minesGridBoard {
                 grid-template-columns: repeat(4, 45px) !important;
                 grid-template-rows: repeat(4, 45px) !important;
                 gap: 6px !important;
-            }
-            #minesGridBoard div {
-                font-size: 1rem !important;
             }
         }
     </style>
@@ -134,51 +150,48 @@
     <div class="admin-workspace-card">
         <div class="admin-header-layout-container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
             <div>
-                <h2>Member Configuration Space</h2>
-                <p>Welcome to your interface customization hub.</p>
+                <h2 style="font-size: 1.4rem; margin: 0;">Member Configuration</h2>
+                <p style="font-size: 0.85rem; margin: 4px 0 0 0; color: #8a8a9e;">Customization interface space.</p>
             </div>
             <button id="themeToggleBtn" class="btn" style="width: auto; padding: 8px 15px; font-size: 0.85rem; margin: 0; cursor: pointer;">🌓 Toggle Theme</button>
         </div>
 
         <div class="dashboard-navigation-tabs">
             <button class="nav-tab-btn active" data-target="profile-tab-content">
-                <span>👤</span>
-                <span>Profile Settings</span>
+                <span>👤</span><span>Profile</span>
             </button>
             <button class="nav-tab-btn" data-target="admin-tab-content">
-                <span>🛡️</span>
-                <span>Admin Info</span>
+                <span>🛡️</span><span>Admin Info</span>
             </button>
             <button class="nav-tab-btn" data-target="game-tab-content">
-                <span>💣</span>
-                <span>Matrix Game</span>
+                <span>💣</span><span>Mines Game</span>
             </button>
         </div>
 
         <div id="profile-tab-content" class="tab-content-panel">
             <div class="profile-custom-wrapper">
-                <h3>Customize Profile</h3>
-                <p>Modify your display status credentials, system metadata variables, and custom avatar view.</p>
+                <h3 style="font-size: 1.1rem; margin-top: 0;">Customize Profile</h3>
+                <p style="font-size: 0.8rem; color: #8a8a9e;">Modify credentials and custom avatar view parameters.</p>
                 
-                <div class="profile-custom-layout" style="display: flex; gap: 20px; margin-top: 15px;">
-                    <div class="avatar-upload-block" style="text-align: center; min-width: 150px;">
-                        <div class="admin-avatar-bubble" id="avatarPreview" onclick="triggerAvatarUpload()" style="margin: 0 auto 10px auto; cursor: pointer;">
+                <div class="profile-custom-layout" style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 15px;">
+                    <div class="avatar-upload-block" style="text-align: center; margin: 0 auto; min-width: 120px;">
+                        <div class="admin-avatar-bubble" id="avatarPreview" onclick="triggerAvatarUpload()" style="margin: 0 auto 10px auto; cursor: pointer; width: 100px; height: 100px;">
                             <span id="avatarInitial" style="font-size: 2rem; font-weight: bold;">M</span>
                         </div>
                         <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" onchange="handleAvatarChange(this)">
-                        <p class="avatar-label" style="font-size: 0.75rem; color: #8a8a9e;">Click bubble to change Avatar DP</p>
+                        <p class="avatar-label" style="font-size: 0.7rem; color: #8a8a9e;">Tap bubble to change DP</p>
                     </div>
 
-                    <div class="profile-form-grid" style="flex: 1; width: 100%;">
-                        <div class="input-group" style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Display Name</label>
+                    <div class="profile-form-grid" style="flex: 1; min-width: 200px; width: 100%;">
+                        <div class="input-group" style="margin-bottom: 12px;">
+                            <label style="display: block; margin-bottom: 5px; font-size: 0.85rem;">Display Name</label>
                             <input type="text" id="sysNameInput" style="width: 100%; box-sizing: border-box;">
                         </div>
-                        <div class="input-group" style="margin-bottom: 15px;">
-                            <label style="display: block; margin-bottom: 5px; font-size: 0.9rem;">Member Bio / About Me</label>
-                            <textarea id="sysBioInput" placeholder="Write something about yourself..." style="width: 100%; box-sizing: border-box; min-height: 80px;"></textarea>
+                        <div class="input-group" style="margin-bottom: 12px;">
+                            <label style="display: block; margin-bottom: 5px; font-size: 0.85rem;">Member Bio / About Me</label>
+                            <textarea id="sysBioInput" placeholder="Write something about yourself..." style="width: 100%; box-sizing: border-box; min-height: 70px;"></textarea>
                         </div>
-                        <button type="button" class="btn" id="saveProfileBtn" style="width: 100%;">Save Profile Configuration</button>
+                        <button type="button" class="btn" id="saveProfileBtn" style="width: 100%; padding: 10px;">Save Configuration</button>
                     </div>
                 </div>
             </div>
@@ -186,17 +199,16 @@
 
         <div id="admin-tab-content" class="tab-content-panel" style="display: none;">
             <div class="profile-custom-wrapper">
-                <h3>🛡️ System Administrator Info</h3>
-                <p>Get to know the developer running this architecture network</p>
+                <h3 style="font-size: 1.1rem; margin-top: 0;">System Administrator Info</h3>
                 
-                <div class="admin-card-display" style="display: flex; align-items: center; gap: 20px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 15px;">
-                    <div id="memberViewAdminAvatar" class="admin-avatar-bubble" style="width: 75px; height: 75px; min-width: 75px; cursor: default; background-color: #ff007f; border: 2px solid #00ffff; pointer-events: none; margin: 0 auto;">
-                        <span id="memberViewAdminInitial" style="font-size: 1.8rem; font-weight: bold;">G</span>
+                <div class="admin-card-display" style="display: flex; flex-wrap: wrap; align-items: center; gap: 15px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 15px;">
+                    <div id="memberViewAdminAvatar" class="admin-avatar-bubble" style="width: 70px; height: 70px; min-width: 70px; cursor: default; background-color: #ff007f; border: 2px solid #00ffff; pointer-events: none; margin: 0 auto;">
+                        <span id="memberViewAdminInitial" style="font-size: 1.6rem; font-weight: bold;">G</span>
                     </div>
-                    <div style="flex: 1;">
-                        <h4 id="memberViewAdminName" style="margin: 0; font-size: 1.2rem; color: #fff;">Gerrald Bicera</h4>
-                        <span style="display: inline-block; background: rgba(0, 255, 255, 0.15); color: #00ffff; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin: 4px 0 8px 0;">Root Admin</span>
-                        <p id="memberViewAdminBio" style="margin: 0; font-size: 0.9rem; color: #b2b2c5; line-height: 1.4;">System Administrator.</p>
+                    <div style="flex: 1; min-width: 180px;">
+                        <h4 id="memberViewAdminName" style="margin: 0; font-size: 1.1rem; color: #fff;">Gerrald Bicera</h4>
+                        <span style="display: inline-block; background: rgba(0, 255, 255, 0.15); color: #00ffff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: bold; margin: 4px 0 6px 0;">Root Admin</span>
+                        <p id="memberViewAdminBio" style="margin: 0; font-size: 0.85rem; color: #b2b2c5; line-height: 1.4;">System Administrator.</p>
                     </div>
                 </div>
             </div>
@@ -204,17 +216,16 @@
 
         <div id="game-tab-content" class="tab-content-panel" style="display: none;">
             <div class="profile-custom-wrapper">
-                <h3>💣 Interactive Network Mini-Game: Matrix Mines</h3>
-                <p>Avoid hidden malware blocks and sweep clean data crystals to clear the sector.</p>
+                <h3 style="font-size: 1.1rem; margin-top: 0;">Matrix Mines Arena</h3>
                 
-                <div class="game-container" style="display: flex; flex-direction: column; align-items: center; gap: 15px; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin-top: 15px;">
-                    <div style="display: flex; gap: 15px; align-items: center; justify-content: center; width: 100%; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <div class="game-container" style="display: flex; flex-direction: column; align-items: center; gap: 12px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-top: 12px;">
+                    <div style="display: flex; gap: 10px; align-items: center; justify-content: center; width: 100%; flex-wrap: wrap; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">
                         <div>
-                            <label style="font-size: 0.85rem; color: #8a8a9e; margin-right: 5px;">Mines (1-10):</label>
-                            <input type="number" id="mineCountInput" value="3" min="1" max="10" style="width: 55px; background: #222235; border: 1px solid #3b3b54; color: #fff; padding: 5px; border-radius: 4px; text-align: center;">
+                            <label style="font-size: 0.8rem; color: #8a8a9e; margin-right: 3px;">Mines:</label>
+                            <input type="number" id="mineCountInput" value="3" min="1" max="10" style="width: 45px; background: #222235; border: 1px solid #3b3b54; color: #fff; padding: 4px; border-radius: 4px; text-align: center; font-size: 0.85rem;">
                         </div>
-                        <button id="startGameBtn" class="btn" style="width: auto; margin: 0; padding: 6px 15px; font-size: 0.85rem;">Initialize Matrix</button>
-                        <span style="font-size: 0.9rem;">Status: <strong id="gameStatusText" style="color: #ccc; background: #333; padding: 2px 8px; border-radius: 4px;">Ready</strong></span>
+                        <button id="startGameBtn" class="btn" style="width: auto; margin: 0; padding: 5px 12px; font-size: 0.8rem;">Initialize</button>
+                        <span style="font-size: 0.8rem;">Status: <strong id="gameStatusText" style="color: #ccc; background: #333; padding: 2px 6px; border-radius: 4px;">Ready</strong></span>
                     </div>
                     <div id="minesGridBoard" style="display: grid; grid-template-columns: repeat(4, 55px); grid-template-rows: repeat(4, 55px); gap: 8px; margin-top: 5px;"></div>
                 </div>
