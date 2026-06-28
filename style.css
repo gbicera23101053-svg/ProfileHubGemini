@@ -436,3 +436,25 @@ body.light-mode .pass-code { background: rgba(0, 0, 0, 0.06); }
 
 body.light-mode .profile-form-grid textarea { border: 1px solid rgba(0, 0, 0, 0.2); background: rgba(255, 255, 255, 0.9); color: #1f2937; }
 .profile-form-grid textarea:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2); }
+
+/* I-paste ito sa pinakailalim ng style.css mo kung meron man */
+.back-hub-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #ffcc00; /* o kung ano mang kulay ng dilaw mo */
+    color: #000;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+@media (max-width: 768px) {
+    .back-hub-btn {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+        margin-bottom: 15px;
+    }
+}

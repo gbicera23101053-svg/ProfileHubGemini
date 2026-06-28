@@ -238,3 +238,75 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 cell.onmouseout = () => { 
                     if(!cell.dataset.active) {
+                        cell.style.background = document.body.classList.contains('light-mode') ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.1)";
+                    } 
+                };
+
+                cell.addEventListener('click', () => {
+                    if (isGameOver || cell.dataset.active) return;
+                    cell.dataset.active = "true";
+
+                    if (minePositions.includes(i)) {
+                        cell.style.background = "rgba(255,0,127,0.3)";
+                        cell.style.borderColor = "#ff007f";
+                        cell.textContent = "💣";
+                        isGameOver = true;
+                        revealAllMines();
+                        statusText.textContent = "💥 Game Over";
+                        statusText.style.cssText = "color: #ff007f; background: rgba(255,0,127,0.15); padding: 2px 8px; border-radius: 4px; border: 1px solid #ff007f;";
+                        return;
+                    }
+
+                    cell.style.background = "rgba(0,255,255,0.2)";
+                    cell.style.borderColor = "#00ffff";
+                    cell.textContent = "💎";
+                    revealedCells++;
+
+                    if (revealedCells === (GRID_SIZE - desiredMines)) {
+                        isGameOver = true;
+                        revealAllMines();
+                        statusText.textContent = "🎉 Sector Clear!";
+                        statusText.style.cssText = "color: #00ff00; background: rgba(0,255,0,0.15); padding: 2px 8px; border-radius: 4px; border: 1px solid #00ff00;";
+                        alert("Outstanding strategy! Vector fully clear!");
+                    }
+                });
+
+                gridBoard.appendChild(cell);
+            }
+        });
+    }
+
+    function revealAllMines() {
+        if (!gridBoard) return;
+        const items = gridBoard.children;
+        minePositions.forEach(pos => {
+            if (items[pos]) {
+                items[pos].style.background = "rgba(255,0,127,0.3)";
+                items[pos].style.borderColor = "#ff007f";
+                items[pos].textContent = "💣";
+            }
+        });
+    }
+
+    // ==========================================================================
+    // 🔀 CORE TAB SWITCHING INTERACTION MECHANISM
+    // ==========================================================================
+    const tabButtons = document.querySelectorAll('.nav-tab-btn');
+    const contentPanels = document.querySelectorAll('.tab-content-panel');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // De-activate all active configurations
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            contentPanels.forEach(panel => panel.style.display = 'none');
+
+            // Activate target sector panel triggers
+            button.classList.add('active');
+            const targetId = button.getAttribute('data-target');
+            const targetPanel = document.getElementById(targetId);
+            if (targetPanel) {
+                targetPanel.style.display = 'block';
+            }
+        });
+    });
+});
