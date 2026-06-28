@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem(`avatar_${currentEmail}`, uploadedMemberAvatarBase64);
             }
 
-            // Sync with central database registry array
+            // Sync sa central master accounts list array
             let registeredUsers = JSON.parse(localStorage.getItem('systemUsers')) || [];
             registeredUsers = registeredUsers.map(user => {
                 if (user.email === currentEmail) {
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             localStorage.setItem('systemUsers', JSON.stringify(registeredUsers));
 
-            // Sync structural session model
+            // Sync structural session models
             localStorage.setItem('currentUser', JSON.stringify({
                 name: profilePayload.systemName,
                 email: currentEmail
@@ -124,18 +124,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================================================
-    // 🛡️ PART 3: ADMINISTRATOR FEED LOADER (LIVE RE-SYNC)
+    // 🛡️ PART 3: ADMINISTRATOR FEED LOADER (SOLID DEVICE FALLBACK PATCHED)
     // ==========================================================================
     const memberViewAdminName = document.getElementById('memberViewAdminName');
     const memberViewAdminBio = document.getElementById('memberViewAdminBio');
     const memberViewAdminAvatar = document.getElementById('memberViewAdminAvatar');
     const memberViewAdminInitial = document.getElementById('memberViewAdminInitial');
 
+    // Mga permanenteng default values para kapag walang nakitang admin profile sa laptop ng nag-te-test
+    const DEFAULT_ADMIN_NAME = "Gerrald Bicera";
+    const DEFAULT_ADMIN_BIO = "I am a computer science student and I love to explore what technology can do including how far I can go with AI.";
+
     const savedAdminProfile = localStorage.getItem('profile_admin');
     if (savedAdminProfile) {
         const adminData = JSON.parse(savedAdminProfile);
-        if (memberViewAdminName) memberViewAdminName.textContent = adminData.systemName || "Gerrald Bicera";
-        if (memberViewAdminBio) memberViewAdminBio.textContent = adminData.bio || "System Administrator.";
+        if (memberViewAdminName) memberViewAdminName.textContent = adminData.systemName || DEFAULT_ADMIN_NAME;
+        if (memberViewAdminBio) memberViewAdminBio.textContent = adminData.bio || DEFAULT_ADMIN_BIO;
+    } else {
+        if (memberViewAdminName) memberViewAdminName.textContent = DEFAULT_ADMIN_NAME;
+        if (memberViewAdminBio) memberViewAdminBio.textContent = DEFAULT_ADMIN_BIO;
     }
 
     const savedAdminAvatar = localStorage.getItem('avatar_admin');
@@ -144,6 +151,15 @@ document.addEventListener('DOMContentLoaded', () => {
         memberViewAdminAvatar.style.backgroundSize = 'cover';
         memberViewAdminAvatar.style.backgroundPosition = 'center';
         if (memberViewAdminInitial) memberViewAdminInitial.style.display = 'none';
+    } else {
+        if (memberViewAdminAvatar) {
+            // Kung walang custom base64 image sa device ng tester, tanggalin ang background url para lumitaw ang neon initial text background
+            memberViewAdminAvatar.style.backgroundImage = 'none';
+        }
+        if (memberViewAdminInitial) {
+            memberViewAdminInitial.textContent = "G";
+            memberViewAdminInitial.style.display = 'block';
+        }
     }
 
     // ==========================================================================
@@ -222,75 +238,3 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 cell.onmouseout = () => { 
                     if(!cell.dataset.active) {
-                        cell.style.background = document.body.classList.contains('light-mode') ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.1)";
-                    } 
-                };
-
-                cell.addEventListener('click', () => {
-                    if (isGameOver || cell.dataset.active) return;
-                    cell.dataset.active = "true";
-
-                    if (minePositions.includes(i)) {
-                        cell.style.background = "rgba(255,0,127,0.3)";
-                        cell.style.borderColor = "#ff007f";
-                        cell.textContent = "💣";
-                        isGameOver = true;
-                        revealAllMines();
-                        statusText.textContent = "💥 Game Over";
-                        statusText.style.cssText = "color: #ff007f; background: rgba(255,0,127,0.15); padding: 2px 8px; border-radius: 4px; border: 1px solid #ff007f;";
-                        return;
-                    }
-
-                    cell.style.background = "rgba(0,255,255,0.2)";
-                    cell.style.borderColor = "#00ffff";
-                    cell.textContent = "💎";
-                    revealedCells++;
-
-                    if (revealedCells === (GRID_SIZE - desiredMines)) {
-                        isGameOver = true;
-                        revealAllMines();
-                        statusText.textContent = "🎉 Sector Clear!";
-                        statusText.style.cssText = "color: #00ff00; background: rgba(0,255,0,0.15); padding: 2px 8px; border-radius: 4px; border: 1px solid #00ff00;";
-                        alert("Outstanding strategy! Vector fully clear!");
-                    }
-                });
-
-                gridBoard.appendChild(cell);
-            }
-        });
-    }
-
-    function revealAllMines() {
-        if (!gridBoard) return;
-        const items = gridBoard.children;
-        minePositions.forEach(pos => {
-            if (items[pos]) {
-                items[pos].style.background = "rgba(255,0,127,0.3)";
-                items[pos].style.borderColor = "#ff007f";
-                items[pos].textContent = "💣";
-            }
-        });
-    }
-
-    // ==========================================================================
-    // 🔀 CORE TAB SWITCHING INTERACTION MECHANISM
-    // ==========================================================================
-    const tabButtons = document.querySelectorAll('.nav-tab-btn');
-    const contentPanels = document.querySelectorAll('.tab-content-panel');
-
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            // De-activate all elements
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            contentPanels.forEach(panel => panel.style.display = 'none');
-
-            // Activate current trigger state
-            button.classList.add('active');
-            const targetId = button.getAttribute('data-target');
-            const targetPanel = document.getElementById(targetId);
-            if (targetPanel) {
-                targetPanel.style.display = 'block';
-            }
-        });
-    });
-});
