@@ -1,14 +1,39 @@
 // ==========================================================================
-// 🌌 GLOBAL STATE REGISTERS & AVATAR LOADER ENGINE
+// 🔥 FIREBASE CORE MODULES INFRASTRUCTURE LOADERS
 // ==========================================================================
-let uploadedMemberAvatarBase64 = "";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-function triggerAvatarUpload() { 
-    const fileInput = document.getElementById('avatarFileInput');
-    if (fileInput) fileInput.click(); 
+// ⚠️ MISMONG SUSI NG DATABASE MO (HETO ANG GALING KAY GOOGLE FIREBASE)
+const firebaseConfig = {
+    apiKey: "AIzaSyDtJz-W92bA9uYz9GRKMqmYFRjE134gxSCI",
+    authDomain: "matrix-hub-a449e.firebaseapp.com",
+    databaseURL: "https://matrix-hub-a449e-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "matrix-hub-a449e",
+    storageBucket: "matrix-hub-a449e.firebasestorage.app",
+    messagingSenderId: "298256043433",
+    appId: "1:298256043433:web:ac11e2cc98badba79b6838"
+};
+
+// Initialize Firebase Realtime Data System
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Helper function para gawing ligtas ang email string bilang Firebase Node key
+function encodeEmailKey(email) {
+    return email.replace(/\./g, '_');
 }
 
-function handleAvatarChange(input) {
+// Global Avatar Storage Register Variable
+let uploadedMemberAvatarBase64 = "";
+
+// Gawing available sa window scope ang avatar triggers dahil naka-ES6 Module na tayo ngayon
+window.triggerAvatarUpload = function() {
+    const fileInput = document.getElementById('avatarFileInput');
+    if (fileInput) fileInput.click();
+};
+
+window.handleAvatarChange = function(input) {
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -19,20 +44,18 @@ function handleAvatarChange(input) {
                 preview.style.backgroundPosition = 'center';
             }
             const initial = document.getElementById('avatarInitial');
-            if (initial) {
-                initial.style.display = 'none';
-            }
+            if (initial) initial.style.display = 'none';
+            
             uploadedMemberAvatarBase64 = e.target.result;
         };
         reader.readAsDataURL(input.files[0]);
     }
-}
+};
 
 document.addEventListener('DOMContentLoaded', () => {
-    const ADMIN_EMAIL = "gerraldbicerabicera@gmail.com";
+    // Kinukuha pa rin natin ang active session sa local para malaman kung sino ang kasalukuyang naka-login
     const activeSession = JSON.parse(localStorage.getItem('currentUser'));
 
-    // Secure Verification Check Gateway
     if (!activeSession) {
         alert("System Notification: Access denied. Active authentication token missing.");
         window.location.href = "login.html";
@@ -40,9 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const currentEmail = activeSession.email;
+    const userFirebaseKey = encodeEmailKey(currentEmail);
 
     // ==========================================================================
-    // 🌓 PART 1: DYNAMIC ENVIRONMENT THEME TRACKER
+    // 🌓 PART 1: LOCAL ENVIRONMENT THEME TRACKER
     // ==========================================================================
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const bodyEl = document.getElementById('dashboardBody');
@@ -63,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================================================
-    // 👤 PART 2: DATA HYDRATION & MEMORY STATE SAVER
+    // 👤 PART 2: CLOUD DATA HYDRATION & MEMORY STATE SAVER (REAL-TIME FETCH)
     // ==========================================================================
     const sysNameInput = document.getElementById('sysNameInput');
     const sysBioInput = document.getElementById('sysBioInput');
@@ -71,96 +95,100 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatarPreview = document.getElementById('avatarPreview');
     const avatarInitial = document.getElementById('avatarInitial');
 
-    const savedMemberProfile = localStorage.getItem(`profile_${currentEmail}`);
-    uploadedMemberAvatarBase64 = localStorage.getItem(`avatar_${currentEmail}`) || '';
+    // 🔄 Humila ng data mula sa Cloud Database pagka-load ng profile panel
+    const userProfileRef = ref(db, 'users/' + userFirebaseKey);
+    get(userProfileRef).then((snapshot) => {
+        if (snapshot.exists()) {
+            const userData = snapshot.val();
+            if (sysNameInput) sysNameInput.value = userData.name || activeSession.name;
+            if (sysBioInput) sysBioInput.value = userData.bio || "";
+            
+            if (userData.avatar && avatarPreview) {
+                uploadedMemberAvatarBase64 = userData.avatar;
+                avatarPreview.style.backgroundImage = `url('${userData.avatar}')`;
+                avatarPreview.style.backgroundSize = 'cover';
+                avatarPreview.style.backgroundPosition = 'center';
+                if (avatarInitial) avatarInitial.style.display = 'none';
+            } else if (avatarInitial) {
+                avatarInitial.textContent = (userData.name || activeSession.name).charAt(0).toUpperCase();
+            }
+        } else {
+            if (sysNameInput) sysNameInput.value = activeSession.name;
+            if (avatarInitial) avatarInitial.textContent = activeSession.name.charAt(0).toUpperCase();
+        }
+    }).catch((error) => console.error("Error pulling database state: ", error));
 
-    if (savedMemberProfile && sysNameInput && sysBioInput) {
-        const data = JSON.parse(savedMemberProfile);
-        sysNameInput.value = data.systemName || activeSession.name;
-        sysBioInput.value = data.bio || "";
-    } else if (sysNameInput) {
-        sysNameInput.value = activeSession.name;
-    }
-
-    if (uploadedMemberAvatarBase64 && avatarPreview) {
-        avatarPreview.style.backgroundImage = `url('${uploadedMemberAvatarBase64}')`;
-        avatarPreview.style.backgroundSize = 'cover';
-        avatarPreview.style.backgroundPosition = 'center';
-        if (avatarInitial) avatarInitial.style.display = 'none';
-    } else if (avatarInitial && sysNameInput && sysNameInput.value) {
-        avatarInitial.textContent = sysNameInput.value.charAt(0).toUpperCase();
-    }
-
+    // 💾 I-commit ang binagong profile data diretso sa Cloud Server!
     if (saveProfileBtn) {
         saveProfileBtn.addEventListener('click', () => {
+            const updatedName = sysNameInput.value.trim();
+            const updatedBio = sysBioInput.value.trim();
+
             const profilePayload = {
-                systemName: sysNameInput.value.trim(),
-                bio: sysBioInput.value.trim()
+                name: updatedName,
+                email: currentEmail,
+                bio: updatedBio,
+                avatar: uploadedMemberAvatarBase64,
+                status: "Online"
             };
 
-            localStorage.setItem(`profile_${currentEmail}`, JSON.stringify(profilePayload));
-            if (uploadedMemberAvatarBase64) {
-                localStorage.setItem(`avatar_${currentEmail}`, uploadedMemberAvatarBase64);
-            }
-
-            // Sync sa central master accounts list array
-            let registeredUsers = JSON.parse(localStorage.getItem('systemUsers')) || [];
-            registeredUsers = registeredUsers.map(user => {
-                if (user.email === currentEmail) {
-                    user.name = profilePayload.systemName;
-                }
-                return user;
-            });
-            localStorage.setItem('systemUsers', JSON.stringify(registeredUsers));
-
-            // Sync structural session models
-            localStorage.setItem('currentUser', JSON.stringify({
-                name: profilePayload.systemName,
-                email: currentEmail
-            }));
-
-            alert("Member directory data state committed successfully!");
+            // Isulat sa Firebase DB path: users/email_key/
+            set(ref(db, 'users/' + userFirebaseKey), profilePayload)
+                .then(() => {
+                    // Panatilihing updated din ang local mirror token ng active logging data
+                    localStorage.setItem('currentUser', JSON.stringify({
+                        name: updatedName,
+                        email: currentEmail
+                    }));
+                    alert("Cloud Registry State committed successfully! Reflecting cross-device.");
+                })
+                .catch((error) => alert("Database transmission block encountered: " + error));
         });
     }
 
     // ==========================================================================
-    // 🛡️ PART 3: ADMINISTRATOR FEED LOADER (SOLID DEVICE FALLBACK PATCHED)
+    // 🛡️ PART 3: ADMINISTRATOR FEED LOADER (REAL-TIME SYNC FROM ROOT CLOUD)
     // ==========================================================================
     const memberViewAdminName = document.getElementById('memberViewAdminName');
     const memberViewAdminBio = document.getElementById('memberViewAdminBio');
     const memberViewAdminAvatar = document.getElementById('memberViewAdminAvatar');
     const memberViewAdminInitial = document.getElementById('memberViewAdminInitial');
 
-    // Mga permanenteng default values para kapag walang nakitang admin profile sa laptop ng nag-te-test
-    const DEFAULT_ADMIN_NAME = "Gerrald Bicera";
-    const DEFAULT_ADMIN_BIO = "I am a computer science student and I love to explore what technology can do including how far I can go with AI.";
+    const adminFirebaseKey = encodeEmailKey("gerraldbicerabicera@gmail.com");
+    const adminProfileRef = ref(db, 'users/' + adminFirebaseKey);
 
-    const savedAdminProfile = localStorage.getItem('profile_admin');
-    if (savedAdminProfile) {
-        const adminData = JSON.parse(savedAdminProfile);
-        if (memberViewAdminName) memberViewAdminName.textContent = adminData.systemName || DEFAULT_ADMIN_NAME;
-        if (memberViewAdminBio) memberViewAdminBio.textContent = adminData.bio || DEFAULT_ADMIN_BIO;
-    } else {
-        if (memberViewAdminName) memberViewAdminName.textContent = DEFAULT_ADMIN_NAME;
-        if (memberViewAdminBio) memberViewAdminBio.textContent = DEFAULT_ADMIN_BIO;
-    }
+    // 🔥 Gagamit tayo ng onValue para kapag binago mo ang profile mo sa laptop mo,
+    // instant na magbabago ang info mo sa screen ng phone ng tester nang walang refresh!
+    onValue(adminProfileRef, (snapshot) => {
+        const DEFAULT_ADMIN_NAME = "Gerrald Bicera";
+        const DEFAULT_ADMIN_BIO = "I am a computer science student and I love to explore what technology can do including how far I can go with AI.";
 
-    const savedAdminAvatar = localStorage.getItem('avatar_admin');
-    if (savedAdminAvatar && memberViewAdminAvatar) {
-        memberViewAdminAvatar.style.backgroundImage = `url('${savedAdminAvatar}')`;
-        memberViewAdminAvatar.style.backgroundSize = 'cover';
-        memberViewAdminAvatar.style.backgroundPosition = 'center';
-        if (memberViewAdminInitial) memberViewAdminInitial.style.display = 'none';
-    } else {
-        if (memberViewAdminAvatar) {
-            // Kung walang custom base64 image sa device ng tester, tanggalin ang background url para lumitaw ang neon initial text background
-            memberViewAdminAvatar.style.backgroundImage = 'none';
+        if (snapshot.exists()) {
+            const adminData = snapshot.val();
+            if (memberViewAdminName) memberViewAdminName.textContent = adminData.name || DEFAULT_ADMIN_NAME;
+            if (memberViewAdminBio) memberViewAdminBio.textContent = adminData.bio || DEFAULT_ADMIN_BIO;
+            
+            if (adminData.avatar && memberViewAdminAvatar) {
+                memberViewAdminAvatar.style.backgroundImage = `url('${adminData.avatar}')`;
+                memberViewAdminAvatar.style.backgroundSize = 'cover';
+                memberViewAdminAvatar.style.backgroundPosition = 'center';
+                if (memberViewAdminInitial) memberViewAdminInitial.style.display = 'none';
+            } else {
+                if (memberViewAdminAvatar) memberViewAdminAvatar.style.backgroundImage = 'none';
+                if (memberViewAdminInitial) {
+                    memberViewAdminInitial.textContent = "G";
+                    memberViewAdminInitial.style.display = 'block';
+                }
+            }
+        } else {
+            if (memberViewAdminName) memberViewAdminName.textContent = DEFAULT_ADMIN_NAME;
+            if (memberViewAdminBio) memberViewAdminBio.textContent = DEFAULT_ADMIN_BIO;
+            if (memberViewAdminInitial) {
+                memberViewAdminInitial.textContent = "G";
+                memberViewAdminInitial.style.display = 'block';
+            }
         }
-        if (memberViewAdminInitial) {
-            memberViewAdminInitial.textContent = "G";
-            memberViewAdminInitial.style.display = 'block';
-        }
-    }
+    });
 
     // ==========================================================================
     // 🚪 PART 4: SECURITY GATEWAY HUB EXCLUSION
@@ -170,18 +198,12 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutBtn.addEventListener('click', (e) => {
             e.preventDefault();
             
-            let registeredUsers = JSON.parse(localStorage.getItem('systemUsers')) || [];
-            registeredUsers = registeredUsers.map(user => {
-                if (user.email === currentEmail) {
-                    user.status = "Offline";
-                }
-                return user;
+            // I-update ang status sa Firebase database bago mag-sign out
+            set(ref(db, `users/${userFirebaseKey}/status`), "Offline").then(() => {
+                localStorage.removeItem('currentUser');
+                alert("Cryptographic network channel severed. Returning to gateway hub.");
+                window.location.href = "login.html";
             });
-            localStorage.setItem('systemUsers', JSON.stringify(registeredUsers));
-            
-            localStorage.removeItem('currentUser');
-            alert("Cryptographic network channel severed. Returning to gateway hub.");
-            window.location.href = "login.html";
         });
     }
 
@@ -236,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         cell.style.background = document.body.classList.contains('light-mode') ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.2)";
                     } 
                 };
-                cell.onmouseout = () => { 
+                onmouseout = () => { 
                     if(!cell.dataset.active) {
                         cell.style.background = document.body.classList.contains('light-mode') ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.1)";
                     } 
@@ -296,11 +318,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tabButtons.forEach(button => {
         button.addEventListener('click', () => {
-            // De-activate all active configurations
             tabButtons.forEach(btn => btn.classList.remove('active'));
             contentPanels.forEach(panel => panel.style.display = 'none');
 
-            // Activate target sector panel triggers
             button.classList.add('active');
             const targetId = button.getAttribute('data-target');
             const targetPanel = document.getElementById(targetId);
