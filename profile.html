@@ -5,43 +5,161 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Member Profile Panel</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* 🎛️ TAB SWITCHING ARCHITECTURE STYLES */
+        .dashboard-navigation-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 12px;
+        }
+        .nav-tab-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #b2b2c5;
+            padding: 10px 22px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .nav-tab-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        .nav-tab-btn.active {
+            background: #ff007f;
+            color: #fff;
+            border-color: #ff007f;
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.3);
+        }
+        
+        /* Light Mode Styles Adaptation */
+        body.light-mode .nav-tab-btn {
+            background: #e2e4e9;
+            border: 1px solid #cbd2d9;
+            color: #616e7c;
+        }
+        body.light-mode .nav-tab-btn:hover {
+            background: #cbd2d9;
+            color: #1c1c24;
+        }
+        body.light-mode .nav-tab-btn.active {
+            background: #ff007f;
+            color: #fff;
+            border-color: #ff007f;
+        }
+        
+        .tab-content-panel {
+            animation: fadeInState 0.3s ease-in-out;
+        }
+        @keyframes fadeInState {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-<body class="dark-mode">
+<body class="dark-mode" id="dashboardBody">
 
-    <a href="index.html" class="back-hub-btn">← Logout Hub</a>
+    <!-- Integrated Cryptographic Severance Trigger -->
+    <a href="#" class="back-hub-btn" id="logoutBtn">← Logout Hub</a>
 
     <div class="admin-workspace-card">
-        <div class="admin-header-main">
-            <h2>Member Configuration Space</h2>
-            <p>Welcome to your interface customization hub.</p>
+        <div class="admin-header-main" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px;">
+            <div>
+                <h2>Member Configuration Space</h2>
+                <p>Welcome to your interface customization hub.</p>
+            </div>
+            <!-- Dynamic Environment Theme Trigger -->
+            <button id="themeToggleBtn" class="btn" style="width: auto; padding: 8px 15px; font-size: 0.85rem; margin: 0; cursor: pointer;">🌓 Toggle Theme</button>
         </div>
 
-        <div class="profile-custom-wrapper">
-            <h3>Customize Profile</h3>
-            <p>Modify your display status credentials, system metadata variables, and custom avatar view.</p>
-            
-            <div class="profile-custom-layout">
-                <div class="avatar-upload-block">
-                    <div class="admin-avatar-bubble" id="avatarPreview" onclick="triggerAvatarUpload()">
-                        <span id="avatarInitial">M</span>
-                    </div>
-                    <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" onchange="handleAvatarChange(this)">
-                    <p class="avatar-label">Click bubble to change Avatar DP</p>
-                </div>
+        <!-- ================================================================= -->
+        <!-- 🎛️ CATEGORY TAB CONFIGURATION BAR                                 -->
+        <!-- ================================================================= -->
+        <div class="dashboard-navigation-tabs">
+            <button class="nav-tab-btn active" data-target="profile-tab-content">👤 Profile Settings</button>
+            <button class="nav-tab-btn" data-target="admin-tab-content">🛡️ Admin Info</button>
+            <button class="nav-tab-btn" data-target="game-tab-content">💣 Matrix Mines Game</button>
+        </div>
 
-                <div class="profile-form-grid">
-                    <div class="input-group">
-                        <label>Display Name</label>
-                        <input type="text" id="sysNameInput">
+        <!-- ================================================================= -->
+        <!-- CATEGORY 1: 👤 CUSTOMIZE PROFILE SECTOR                          -->
+        <!-- ================================================================= -->
+        <div id="profile-tab-content" class="tab-content-panel">
+            <div class="profile-custom-wrapper">
+                <h3>Customize Profile</h3>
+                <p>Modify your display status credentials, system metadata variables, and custom avatar view.</p>
+                
+                <div class="profile-custom-layout">
+                    <div class="avatar-upload-block">
+                        <div class="admin-avatar-bubble" id="avatarPreview" onclick="triggerAvatarUpload()">
+                            <span id="avatarInitial">M</span>
+                        </div>
+                        <input type="file" id="avatarFileInput" accept="image/*" style="display: none;" onchange="handleAvatarChange(this)">
+                        <p class="avatar-label">Click bubble to change Avatar DP</p>
                     </div>
-                    <div class="input-group">
-                        <label>Member Bio / About Me</label>
-                        <textarea id="sysBioInput" placeholder="Write something about yourself..."></textarea>
+
+                    <div class="profile-form-grid">
+                        <div class="input-group">
+                            <label>Display Name</label>
+                            <input type="text" id="sysNameInput">
+                        </div>
+                        <div class="input-group">
+                            <label>Member Bio / About Me</label>
+                            <textarea id="sysBioInput" placeholder="Write something about yourself..."></textarea>
+                        </div>
+                        <button type="button" class="btn" id="saveProfileBtn">Save Profile Configuration</button>
                     </div>
-                    <button type="button" class="btn" id="saveProfileBtn">Save Profile Configuration</button>
                 </div>
             </div>
         </div>
+
+        <!-- ================================================================= -->
+        <!-- CATEGORY 2: 🛡️ ROOT ADMIN MONITOR SECTOR                          -->
+        <!-- ================================================================= -->
+        <div id="admin-tab-content" class="tab-content-panel" style="display: none;">
+            <div class="profile-custom-wrapper">
+                <h3>🛡️ System Administrator Info</h3>
+                <p>Get to know the developer running this architecture network</p>
+                
+                <div class="admin-card-display" style="display: flex; align-items: center; gap: 20px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-top: 15px;">
+                    <div id="memberViewAdminAvatar" class="admin-avatar-bubble" style="width: 75px; height: 75px; min-width: 75px; cursor: default; background-color: #ff007f; border: 2px solid #00ffff; pointer-events: none;">
+                        <span id="memberViewAdminInitial">G</span>
+                    </div>
+                    <div>
+                        <h4 id="memberViewAdminName" style="margin: 0; font-size: 1.2rem; color: #fff;">Gerrald Bicera</h4>
+                        <span style="display: inline-block; background: rgba(0, 255, 255, 0.15); color: #00ffff; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: bold; margin: 4px 0 8px 0;">Root Admin</span>
+                        <p id="memberViewAdminBio" style="margin: 0; font-size: 0.9rem; color: #b2b2c5; line-height: 1.4;">System Administrator.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- CATEGORY 3: 💣 MATRIX MINES GAME SECTOR                           -->
+        <!-- ================================================================= -->
+        <div id="game-tab-content" class="tab-content-panel" style="display: none;">
+            <div class="profile-custom-wrapper">
+                <h3>💣 Interactive Network Mini-Game: Matrix Mines</h3>
+                <p>Avoid hidden malware blocks and sweep clean data crystals to clear the sector.</p>
+                
+                <div class="game-container" style="display: flex; flex-direction: column; align-items: center; gap: 15px; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 8px; margin-top: 15px;">
+                    <div style="display: flex; gap: 15px; align-items: center; justify-content: center; width: 100%; flex-wrap: wrap; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <div>
+                            <label style="font-size: 0.85rem; color: #8a8a9e; margin-right: 5px;">Mines (1-10):</label>
+                            <input type="number" id="mineCountInput" value="3" min="1" max="10" style="width: 55px; background: #222235; border: 1px solid #3b3b54; color: #fff; padding: 5px; border-radius: 4px; text-align: center;">
+                        </div>
+                        <button id="startGameBtn" class="btn" style="width: auto; margin: 0; padding: 6px 15px; font-size: 0.85rem;">Initialize Matrix</button>
+                        <span style="font-size: 0.9rem;">Status: <strong id="gameStatusText" style="color: #ccc; background: #333; padding: 2px 8px; border-radius: 4px;">Ready</strong></span>
+                    </div>
+                    <div id="minesGridBoard" style="display: grid; grid-template-columns: repeat(4, 55px); grid-template-rows: repeat(4, 55px); gap: 8px; margin-top: 5px;"></div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script src="member.js"></script>

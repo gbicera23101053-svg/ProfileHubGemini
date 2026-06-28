@@ -1,5 +1,6 @@
 // Variable to hold the current email being inspected
 let currentInspectedEmail = "";
+const ADMIN_EMAIL = "gerraldbicerabicera@gmail.com";
 
 function switchAdminTab(tabId) {
     const contents = document.querySelectorAll('.admin-tab-content');
@@ -20,7 +21,9 @@ function renderAdminTable() {
     const totalRegisteredCard = document.querySelector('.stats-grid .stat-card:nth-child(1) h3');
     const liveActiveCard = document.querySelector('.stats-grid .stat-card:nth-child(2) h3');
 
+    // Kuhanin ang central local database array
     let registeredUsers = JSON.parse(localStorage.getItem('systemUsers')) || [];
+    let savedAdminProfile = JSON.parse(localStorage.getItem('profile_admin'));
 
     if (adminTableBody) {
         adminTableBody.innerHTML = ""; 
@@ -29,10 +32,16 @@ function renderAdminTable() {
         registeredUsers.forEach(user => {
             if (user.status === "Active Now") activeCounter++;
 
+            // SYNC CHECK: Kung admin account ang tinutukoy, i-pull ang real-time persistent profile name
+            let displayName = user.name;
+            if (user.email === ADMIN_EMAIL && savedAdminProfile?.systemName) {
+                displayName = savedAdminProfile.systemName;
+            }
+
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td class="user-cell"><strong>${user.name}</strong></td>
-                <td><span class="clickable-email" onclick="inspectUser('${user.email}', '${user.name}')">${user.email}</span></td>
+                <td class="user-cell"><strong>${displayName}</strong></td>
+                <td><span class="clickable-email" onclick="inspectUser('${user.email}', '${displayName}')">${user.email}</span></td>
                 <td><code class="pass-code">${user.password}</code></td>
                 <td><span class="status-indicator ${user.status === 'Active Now' ? 'live' : 'offline'}">${user.status}</span></td>
             `;
@@ -50,11 +59,9 @@ document.addEventListener('DOMContentLoaded', renderAdminTable);
 // --- OPEN AND POPULATE PREVIEW MODAL (FIXED FOR ADMIN LOOKUP) ---
 function inspectUser(email, name) {
     currentInspectedEmail = email;
-    const ADMIN_EMAIL = "gerraldbicerabicera@gmail.com";
     
     let savedProfile, savedAvatar;
 
-    // FIX: Kung admin ang ini-inspect, kunin ang admin specific keys, kung hindi, gamitin ang dynamic email keys
     if (email === ADMIN_EMAIL) {
         const adminData = JSON.parse(localStorage.getItem('profile_admin'));
         savedProfile = adminData ? { systemName: adminData.systemName, bio: adminData.bio } : null;
@@ -85,7 +92,6 @@ function inspectUser(email, name) {
         }
     }
 
-    // Isalang at ipakita ang pop-up window
     document.getElementById('userPreviewModal').style.display = 'flex';
 }
 
@@ -99,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (deleteUserBtn) {
         deleteUserBtn.addEventListener('click', () => {
-            if (currentInspectedEmail === "gerraldbicerabicera@gmail.com") {
+            if (currentInspectedEmail === ADMIN_EMAIL) {
                 alert("Security Error: Root administrator channel cannot be deleted from the system tracker.");
                 return;
             }
@@ -124,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ==========================================================================
-// ADMIN PERSONAL ACCOUNT AREA CONFIGURATION
+// ADMIN PERSONAL ACCOUNT AREA CONFIGURATION (PERMANENT DATA RE-SYNC)
 // ==========================================================================
 function triggerAvatarUpload() { document.getElementById('avatarFileInput').click(); }
 let uploadedAdminAvatarBase64 = localStorage.getItem('avatar_admin') || '';
@@ -151,12 +157,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const sysBioInput = document.getElementById('sysBioInput');
     const saveProfileBtn = document.getElementById('saveProfileBtn');
     const preview = document.getElementById('avatarPreview');
+    const loggedInAsText = document.querySelector('.admin-control-panel-header p, .admin-header-main p');
 
+    // I-LOAD ANG ADMIN DATA AT SIGURADUHING DI MABUBURA SA HARD REFRESH
     const savedAdminProfile = localStorage.getItem('profile_admin');
     if (savedAdminProfile && sysNameInput && sysBioInput) {
         const data = JSON.parse(savedAdminProfile);
         sysNameInput.value = data.systemName || "Gerrald Bicera";
         sysBioInput.value = data.bio || "System Administrator.";
+        if (loggedInAsText) {
+            loggedInAsText.innerHTML = `Logged in as: <strong>${sysNameInput.value}</strong> (${ADMIN_EMAIL})`;
+        }
+    } else {
+        if (sysNameInput && sysBioInput) {
+            sysNameInput.value = "Gerrald Bicera";
+            sysBioInput.value = "System Administrator.";
+        }
     }
 
     if (uploadedAdminAvatarBase64 && preview) {
@@ -166,12 +182,39 @@ document.addEventListener('DOMContentLoaded', () => {
         if (document.getElementById('avatarInitial')) document.getElementById('avatarInitial').style.display = 'none';
     }
 
+    // CRITICAL FIX: PAG-SAVE AT PAGKABIT NG ADMIN INFO SA SYSTEM_USERS DATA ARRAY
     if (saveProfileBtn) {
         saveProfileBtn.addEventListener('click', () => {
-            localStorage.setItem('profile_admin', JSON.stringify({ systemName: sysNameInput.value, bio: sysBioInput.value }));
-            if (uploadedAdminAvatarBase64) localStorage.setItem('avatar_admin', uploadedAdminAvatarBase64);
-            alert('Admin Profile Permanently Saved!');
-            renderAdminTable(); // Siguraduhing updated din ang table list sa bagong pangalan
+            const updatedProfile = { systemName: sysNameInput.value, bio: sysBioInput.value };
+            localStorage.setItem('profile_admin', JSON.stringify(updatedProfile));
+            
+            if (uploadedAdminAvatarBase64) {
+                localStorage.setItem('avatar_admin', uploadedAdminAvatarBase64);
+            }
+
+            // RE-SYNC PROCESS: I-update din ang entry sa master array para hindi mag-clash sa directory
+            let registeredUsers = JSON.parse(localStorage.getItem('systemUsers')) || [];
+            let adminIndex = registeredUsers.findIndex(user => user.email === ADMIN_EMAIL);
+            
+            if (adminIndex !== -1) {
+                registeredUsers[adminIndex].name = sysNameInput.value;
+            } else {
+                // Kung wala pa sa array ang main admin email mo, kusa itong gagawa para hindi mabura ang record mo kailanman
+                registeredUsers.push({
+                    name: sysNameInput.value,
+                    email: ADMIN_EMAIL,
+                    password: "RootPassword123", // Palitan mo ng active password mo kung nais mo
+                    status: "Active Now"
+                });
+            }
+            
+            localStorage.setItem('systemUsers', JSON.stringify(registeredUsers));
+
+            alert('Admin Profile and Directory DB Sync Success!');
+            if (loggedInAsText) {
+                loggedInAsText.innerHTML = `Logged in as: <strong>${sysNameInput.value}</strong> (${ADMIN_EMAIL})`;
+            }
+            renderAdminTable(); 
         });
     }
 });
